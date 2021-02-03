@@ -1,13 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+require("dotenv").config();
 const googleAuth = require(`./app/controllers/googleAuth`);
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:8081",
+  origin: process.env.CORS_ORIGIN,
 };
-
 app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
@@ -38,6 +38,7 @@ app.get("/", (req, res) => {
 
 // set port, listen for requests
 require("./app/routes/tutorial.routes")(app);
+require("./app/routes/auth.routes")(app);
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
