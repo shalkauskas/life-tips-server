@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
+const googleAuth = require(`./app/controllers/googleAuth`);
 const app = express();
 
 var corsOptions = {
@@ -35,6 +35,7 @@ db.mongoose
 app.get("/", (req, res) => {
   res.json({ message: "Tutorials API" });
 });
+
 // set port, listen for requests
 require("./app/routes/tutorial.routes")(app);
 const PORT = process.env.PORT || 8080;

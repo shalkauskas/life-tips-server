@@ -1,6 +1,6 @@
 const db = require("../models");
 const Tutorial = db.tutorials;
-
+const googleAuth = require("./googleAuth.js");
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
   // Validate request
@@ -33,10 +33,11 @@ exports.create = (req, res) => {
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
   const title = req.query.title;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
   var condition = title
     ? { title: { $regex: new RegExp(title), $options: "i" } }
     : {};
-
   Tutorial.find(condition)
     .then((data) => {
       res.send(data);
