@@ -14,6 +14,8 @@ exports.create = (req, res) => {
     title: req.body.title,
     description: req.body.description,
     published: req.body.published ? req.body.published : false,
+    author: req.body.author ? req.body.author : "Anonymous",
+    userId: req.body.userId ? req.body.userId : "0",
   });
 
   // Save Tutorial in the database
