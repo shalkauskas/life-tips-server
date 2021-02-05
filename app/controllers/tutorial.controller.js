@@ -2,15 +2,14 @@ const db = require("../models");
 const Tutorial = db.tutorials;
 const googleAuth = require("./googleAuth.js");
 const admin = process.env.ADMIN_ID;
-// Create and Save a new Tutorial
+// Create and Save a new Tutorial //
 exports.create = (req, res) => {
-  // Validate request
+  // validate request
   if (!req.body.title) {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
   }
-
-  // Create a Tutorial
+  // create a Tutorial
   const tutorial = new Tutorial({
     title: req.body.title,
     description: req.body.description,
@@ -18,8 +17,7 @@ exports.create = (req, res) => {
     author: req.body.author ? req.body.author : "Anonymous",
     userId: req.body.userId ? req.body.userId : "0",
   });
-
-  // Save Tutorial in the database
+  // save Tutorial in the database
   tutorial
     .save(tutorial)
     .then((data) => {
@@ -33,12 +31,16 @@ exports.create = (req, res) => {
     });
 };
 
-// Retrieve all Tutorials from the database.
-exports.findAllOfUser = (req, res) => {
-  const title = req.query.title;
-  var condition = title
-    ? { title: { $regex: new RegExp(title), $options: "i" } }
-    : {};
+// Retrieve all published Tutorials //
+exports.findAllPublished = (req, res) => {
+  const query = req.query.title;
+  var condition = query
+    ? {
+        published: true,
+        $text: { $search: query },
+      }
+    : { published: true };
+
   Tutorial.find(condition)
     .then((data) => {
       res.send(data);
@@ -50,18 +52,15 @@ exports.findAllOfUser = (req, res) => {
       });
     });
 };
-// Retrieve all Tutorials from the database.
+
+// Retrieve all User published Tutorials //
 exports.findAll = (req, res) => {
   const userId = req.params.uid;
-  const title = req.query.title;
   let token = req.headers["x-access-token"];
   googleAuth(token);
   const getResult = async () => {
     await googleAuth(token).then((result) => {
-      var conditionId =
-        userId === admin
-          ? { title: { $regex: new RegExp(title), $options: "i" } }
-          : { userId: result.userId };
+      var conditionId = userId === admin ? {} : { userId: result.userId };
       Tutorial.find(conditionId)
         .then((data) => {
           res.send(data);
@@ -77,7 +76,7 @@ exports.findAll = (req, res) => {
   getResult();
 };
 
-// Find a single Tutorial with an id
+// Find a single Tutorial with an id (not used atm)//
 exports.findOne = (req, res) => {
   const id = req.params.id;
   Tutorial.findById(id)
@@ -92,7 +91,7 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving Tutorial with id=" + id });
     });
 };
-// Find a single Tutorial with an id for update
+// Find a single Tutorial with an id for update //
 exports.findOneForUpdate = (req, res) => {
   const id = req.params.id;
   const userId = req.params.uid;
@@ -123,7 +122,7 @@ exports.findOneForUpdate = (req, res) => {
   getResult();
 };
 
-// Update a Tutorial by the id in the request
+// Update a Tutorial by the id in the request //
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
@@ -158,7 +157,7 @@ exports.update = (req, res) => {
   getResult();
 };
 
-// Delete a Tutorial with the specified id in the request
+// Delete a Tutorial with the specified id in the request //
 exports.delete = (req, res) => {
   const id = req.params.id;
   const userId = req.params.uid;
@@ -191,7 +190,7 @@ exports.delete = (req, res) => {
   getResult();
 };
 
-// Delete all Tutorials added by user.
+// Delete all Tutorials added by user //
 exports.deleteAll = (req, res) => {
   const userId = req.params.uid;
   let token = req.headers["x-access-token"];
@@ -215,18 +214,4 @@ exports.deleteAll = (req, res) => {
     });
   };
   getResult();
-};
-
-// Find all published Tutorials
-exports.findAllPublished = (req, res) => {
-  Tutorial.find({ published: true })
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving tutorials.",
-      });
-    });
 };

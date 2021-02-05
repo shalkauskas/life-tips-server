@@ -5,13 +5,10 @@ module.exports = (app) => {
   // Create a new Tutorial
   router.post("/", tutorials.create);
 
-  // Retrieve all Tutorials
+  // Retrieve all published Tutorials
   router.get("/", tutorials.findAllPublished);
   // Retrieve all User published Tutorials
   router.get("/:uid/update", tutorials.findAll);
-
-  // Retrieve all published Tutorials
-  // router.get("/published", tutorials.findAllPublished);
 
   // Retrieve a single Tutorial with id
   router.get("/:id", tutorials.findOne);
