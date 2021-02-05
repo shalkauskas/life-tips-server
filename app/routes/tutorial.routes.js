@@ -6,12 +6,12 @@ module.exports = (app) => {
   router.post("/", tutorials.create);
 
   // Retrieve all Tutorials
-  router.get("/", tutorials.findAll);
+  router.get("/", tutorials.findAllPublished);
   // Retrieve all User published Tutorials
-  router.get("/:uid/update", tutorials.findAllOfUser);
+  router.get("/:uid/update", tutorials.findAll);
 
   // Retrieve all published Tutorials
-  router.get("/published", tutorials.findAllPublished);
+  // router.get("/published", tutorials.findAllPublished);
 
   // Retrieve a single Tutorial with id
   router.get("/:id", tutorials.findOne);

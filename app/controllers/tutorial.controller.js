@@ -1,6 +1,7 @@
 const db = require("../models");
 const Tutorial = db.tutorials;
 const googleAuth = require("./googleAuth.js");
+const admin = process.env.ADMIN_ID;
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
   // Validate request
@@ -33,7 +34,7 @@ exports.create = (req, res) => {
 };
 
 // Retrieve all Tutorials from the database.
-exports.findAll = (req, res) => {
+exports.findAllOfUser = (req, res) => {
   const title = req.query.title;
   var condition = title
     ? { title: { $regex: new RegExp(title), $options: "i" } }
@@ -50,13 +51,17 @@ exports.findAll = (req, res) => {
     });
 };
 // Retrieve all Tutorials from the database.
-exports.findAllOfUser = (req, res) => {
+exports.findAll = (req, res) => {
   const userId = req.params.uid;
+  const title = req.query.title;
   let token = req.headers["x-access-token"];
   googleAuth(token);
   const getResult = async () => {
     await googleAuth(token).then((result) => {
-      var conditionId = userId ? { userId: result.userId } : {};
+      var conditionId =
+        userId === admin
+          ? { title: { $regex: new RegExp(title), $options: "i" } }
+          : { userId: result.userId };
       Tutorial.find(conditionId)
         .then((data) => {
           res.send(data);
@@ -188,13 +193,12 @@ exports.delete = (req, res) => {
 
 // Delete all Tutorials added by user.
 exports.deleteAll = (req, res) => {
-  console.log("delete");
   const userId = req.params.uid;
   let token = req.headers["x-access-token"];
   googleAuth(token);
   const getResult = async () => {
     await googleAuth(token).then((result) => {
-      var conditionId = userId ? { userId: result.userId } : {};
+      var conditionId = userId === admin ? {} : { userId: result.userId };
       Tutorial.deleteMany(conditionId)
         .then((data) => {
           res.send({
