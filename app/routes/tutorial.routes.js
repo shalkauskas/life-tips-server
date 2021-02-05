@@ -7,21 +7,26 @@ module.exports = (app) => {
 
   // Retrieve all Tutorials
   router.get("/", tutorials.findAll);
+  // Retrieve all User published Tutorials
+  router.get("/:uid/update", tutorials.findAllOfUser);
 
   // Retrieve all published Tutorials
   router.get("/published", tutorials.findAllPublished);
 
   // Retrieve a single Tutorial with id
-  router.get("/update/:id", tutorials.findOne);
+  router.get("/:id", tutorials.findOne);
+
+  // Retrieve a single Tutorial with id for update
+  router.get("/:uid/update/:id", tutorials.findOneForUpdate);
 
   // Update a Tutorial with id
-  router.put("/update/:id", tutorials.update);
+  router.put("/:uid/update/:id", tutorials.update);
 
   // Delete a Tutorial with id
-  router.delete("/:id", tutorials.delete);
+  router.delete("/:uid/update/:id", tutorials.delete);
 
-  // Create a new Tutorial
-  router.delete("/", tutorials.deleteAll);
+  // Delete all Tutorials
+  router.delete("/:uid/update", tutorials.deleteAll);
 
   app.use("/api/tutorials", router);
 };

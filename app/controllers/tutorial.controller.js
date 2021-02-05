@@ -1,6 +1,6 @@
 const db = require("../models");
 const Tutorial = db.tutorials;
-
+const googleAuth = require("./googleAuth.js");
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
   // Validate request
@@ -49,6 +49,28 @@ exports.findAll = (req, res) => {
       });
     });
 };
+// Retrieve all Tutorials from the database.
+exports.findAllOfUser = (req, res) => {
+  const userId = req.params.uid;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
+  const getResult = async () => {
+    await googleAuth(token).then((result) => {
+      var conditionId = userId ? { userId: result.userId } : {};
+      Tutorial.find(conditionId)
+        .then((data) => {
+          res.send(data);
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred while retrieving tutorials.",
+          });
+        });
+    });
+  };
+  getResult();
+};
 
 // Find a single Tutorial with an id
 exports.findOne = (req, res) => {
@@ -65,6 +87,36 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving Tutorial with id=" + id });
     });
 };
+// Find a single Tutorial with an id for update
+exports.findOneForUpdate = (req, res) => {
+  const id = req.params.id;
+  const userId = req.params.uid;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
+  const getResult = async () => {
+    await googleAuth(token).then((result) => {
+      if (userId !== result.userId) {
+        console.log(501);
+        res.status(501).send("Access denied");
+      } else {
+        Tutorial.findById(id)
+          .then((data) => {
+            if (!data)
+              res
+                .status(404)
+                .send({ message: "Not found Tutorial with id " + id });
+            else res.send(data);
+          })
+          .catch((err) => {
+            res
+              .status(500)
+              .send({ message: "Error retrieving Tutorial with id=" + id });
+          });
+      }
+    });
+  };
+  getResult();
+};
 
 // Update a Tutorial by the id in the request
 exports.update = (req, res) => {
@@ -73,61 +125,92 @@ exports.update = (req, res) => {
       message: "Data to update can not be empty!",
     });
   }
-
   const id = req.params.id;
-
-  Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
-        });
-      } else res.send({ message: "Tutorial was updated successfully." });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error updating Tutorial with id=" + id,
-      });
+  const userId = req.params.uid;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
+  const getResult = async () => {
+    await googleAuth(token).then((result) => {
+      if (userId !== result.userId) {
+        res.status(501).send("Access denied");
+      } else {
+        Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+          .then((data) => {
+            if (!data) {
+              res.status(404).send({
+                message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
+              });
+            } else res.send({ message: "Tutorial was updated successfully." });
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: "Error updating Tutorial with id=" + id,
+            });
+          });
+      }
     });
+  };
+  getResult();
 };
 
 // Delete a Tutorial with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
-
-  Tutorial.findByIdAndRemove(id)
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
-        });
+  const userId = req.params.uid;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
+  const getResult = async () => {
+    await googleAuth(token).then((result) => {
+      if (userId !== result.userId) {
+        res.status(501).send("Access denied");
       } else {
-        res.send({
-          message: "Tutorial was deleted successfully!",
-        });
+        Tutorial.findByIdAndRemove(id)
+          .then((data) => {
+            if (!data)
+              res.status(404).send({
+                message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+              });
+            else
+              res.send({
+                message: "Tutorial was deleted successfully!",
+              });
+          })
+          .catch((err) => {
+            res
+              .status(500)
+              .send({ message: "Could not delete Tutorial with id=" + id });
+          });
       }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Could not delete Tutorial with id=" + id,
-      });
     });
+  };
+  getResult();
 };
 
-// Delete all Tutorials from the database.
+// Delete all Tutorials added by user.
 exports.deleteAll = (req, res) => {
-  Tutorial.deleteMany({})
-    .then((data) => {
-      res.send({
-        message: `${data.deletedCount} Tutorials were deleted successfully!`,
-      });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while removing all tutorials.",
-      });
+  console.log("delete");
+  const userId = req.params.uid;
+  let token = req.headers["x-access-token"];
+  googleAuth(token);
+  const getResult = async () => {
+    await googleAuth(token).then((result) => {
+      var conditionId = userId ? { userId: result.userId } : {};
+      Tutorial.deleteMany(conditionId)
+        .then((data) => {
+          res.send({
+            message: `${data.deletedCount} Tutorials were deleted successfully!`,
+          });
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message:
+              err.message ||
+              "Some error occurred while removing all tutorials.",
+          });
+        });
     });
+  };
+  getResult();
 };
 
 // Find all published Tutorials
