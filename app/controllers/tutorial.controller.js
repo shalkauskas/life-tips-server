@@ -1,8 +1,8 @@
 const db = require("../models");
 const Tutorial = db.tutorials;
-const googleAuth = require("./googleAuth.js");
+const User = db.users;
 const admin = process.env.ADMIN_ID;
-// Create and Save a new Tutorial //
+// Create and Save a new Tutorial // passport
 exports.create = (req, res) => {
   // validate request
   if (!req.body.title) {
@@ -53,15 +53,11 @@ exports.findAllPublished = (req, res) => {
     });
 };
 
-// Retrieve all User published Tutorials //
+// Retrieve all User published Tutorials // passport
 exports.findAll = (req, res) => {
-  const userId = req.params.uid;
-  let token = req.headers["x-access-token"];
-  googleAuth(token);
-  const getResult = async () => {
-    await googleAuth(token).then((result) => {
-      var conditionId = userId === admin ? {} : { userId: result.userId };
-      Tutorial.find(conditionId)
+  User.findById(req.user.id, function (err, foundUsers) {
+    if (foundUsers) {
+      Tutorial.find({ userId: req.user.id })
         .then((data) => {
           res.send(data);
         })
@@ -71,55 +67,57 @@ exports.findAll = (req, res) => {
               err.message || "Some error occurred while retrieving tutorials.",
           });
         });
-    });
-  };
-  getResult();
+    } else {
+      res.status(403).send("Not authenticated");
+    }
+  });
 };
 
 // Find a single Tutorial with an id (not used atm)//
 exports.findOne = (req, res) => {
-  const id = req.params.id;
-  Tutorial.findById(id)
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found Tutorial with id " + id });
-      else res.send(data);
-    })
-    .catch((err) => {
-      res
-        .status(500)
-        .send({ message: "Error retrieving Tutorial with id=" + id });
-    });
+  User.findById(req.user.id, function (err, foundUsers) {
+    if (foundUsers) {
+      const id = req.params.id;
+      Tutorial.findById(id)
+        .then((data) => {
+          if (!data)
+            res
+              .status(404)
+              .send({ message: "Not found Tutorial with id " + id });
+          else res.send(data);
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .send({ message: "Error retrieving Tutorial with id=" + id });
+        });
+    } else {
+      res.status(403).send("Not authenticated");
+    }
+  });
 };
 // Find a single Tutorial with an id for update //
 exports.findOneForUpdate = (req, res) => {
-  const id = req.params.id;
-  const userId = req.params.uid;
-  let token = req.headers["x-access-token"];
-  googleAuth(token);
-  const getResult = async () => {
-    await googleAuth(token).then((result) => {
-      if (userId !== result.userId) {
-        console.log(501);
-        res.status(501).send("Access denied");
-      } else {
-        Tutorial.findById(id)
-          .then((data) => {
-            if (!data)
-              res
-                .status(404)
-                .send({ message: "Not found Tutorial with id " + id });
-            else res.send(data);
-          })
-          .catch((err) => {
+  User.findById(req.user.id, function (err, foundUsers) {
+    if (foundUsers) {
+      const id = req.params.id;
+      Tutorial.findById(id)
+        .then((data) => {
+          if (!data)
             res
-              .status(500)
-              .send({ message: "Error retrieving Tutorial with id=" + id });
-          });
-      }
-    });
-  };
-  getResult();
+              .status(404)
+              .send({ message: "Not found Tutorial with id " + id });
+          else res.send(data);
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .send({ message: "Error retrieving Tutorial with id=" + id });
+        });
+    } else {
+      res.status(403).send("Not authenticated");
+    }
+  });
 };
 
 // Update a Tutorial by the id in the request //
@@ -128,77 +126,62 @@ exports.update = (req, res) => {
     return res.status(400).send({
       message: "Data to update can not be empty!",
     });
-  }
-  const id = req.params.id;
-  const userId = req.params.uid;
-  let token = req.headers["x-access-token"];
-  googleAuth(token);
-  const getResult = async () => {
-    await googleAuth(token).then((result) => {
-      if (userId !== result.userId) {
-        res.status(501).send("Access denied");
-      } else {
+  } else {
+    User.findById(req.user.id, function (err, foundUsers) {
+      if (foundUsers) {
+        const id = req.params.id;
         Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-          .then((data) => {
-            if (!data) {
-              res.status(404).send({
-                message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
-              });
-            } else res.send({ message: "Tutorial was updated successfully." });
-          })
-          .catch((err) => {
-            res.status(500).send({
-              message: "Error updating Tutorial with id=" + id,
-            });
-          });
-      }
-    });
-  };
-  getResult();
-};
-
-// Delete a Tutorial with the specified id in the request //
-exports.delete = (req, res) => {
-  const id = req.params.id;
-  const userId = req.params.uid;
-  let token = req.headers["x-access-token"];
-  googleAuth(token);
-  const getResult = async () => {
-    await googleAuth(token).then((result) => {
-      if (userId !== result.userId) {
-        res.status(501).send("Access denied");
-      } else {
-        Tutorial.findByIdAndRemove(id)
           .then((data) => {
             if (!data)
               res.status(404).send({
-                message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+                message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
               });
-            else
-              res.send({
-                message: "Tutorial was deleted successfully!",
-              });
+            else res.send({ message: "Tutorial was updated successfully." });
           })
           .catch((err) => {
             res
               .status(500)
-              .send({ message: "Could not delete Tutorial with id=" + id });
+              .send({ message: "Error updating Tutorial with id=" + id });
           });
+      } else {
+        res.status(403).send("Not authenticated");
       }
     });
-  };
-  getResult();
+  }
+};
+
+// Delete a Tutorial with the specified id in the request //
+exports.delete = (req, res) => {
+  User.findById(req.user.id, function (err, foundUsers) {
+    if (foundUsers) {
+      const id = req.params.id;
+      Tutorial.findByIdAndRemove(id)
+        .then((data) => {
+          if (!data)
+            res.status(404).send({
+              message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+            });
+          else
+            res.send({
+              message: "Tutorial was deleted successfully!",
+            });
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .send({ message: "Could not delete Tutorial with id=" + id });
+        });
+    } else {
+      res.status(403).send("Not authenticated");
+    }
+  });
 };
 
 // Delete all Tutorials added by user //
 exports.deleteAll = (req, res) => {
-  const userId = req.params.uid;
-  let token = req.headers["x-access-token"];
-  googleAuth(token);
-  const getResult = async () => {
-    await googleAuth(token).then((result) => {
-      var conditionId = userId === admin ? {} : { userId: result.userId };
-      Tutorial.deleteMany(conditionId)
+  User.findById(req.user.id, function (err, foundUsers) {
+    if (foundUsers) {
+      Tutorial.deleteMany({ userId: req.user.id })
         .then((data) => {
           res.send({
             message: `${data.deletedCount} Tutorials were deleted successfully!`,
@@ -211,7 +194,8 @@ exports.deleteAll = (req, res) => {
               "Some error occurred while removing all tutorials.",
           });
         });
-    });
-  };
-  getResult();
+    } else {
+      res.status(403).send("Not authenticated");
+    }
+  });
 };
