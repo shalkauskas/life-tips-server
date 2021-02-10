@@ -6,9 +6,7 @@ module.exports = (mongoose) => {
       username: String,
       password: String,
       googleId: String,
-      secret: String,
-      firstName: String,
-      lastName: String,
+      displayName: String,
       photoUrl: String,
     },
     { timestamps: true }

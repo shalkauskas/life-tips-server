@@ -6,7 +6,7 @@ const session = require("express-session");
 const passport = require("passport");
 require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const findOrCreate = require("mongoose-findorcreate");
+// const findOrCreate = require("mongoose-findorcreate");
 const db = require("./app/models");
 const User = db.users;
 var corsOptions = {
@@ -24,6 +24,9 @@ app.use(
   session({
     secret: "12345667",
     resave: false,
+    cookie: {
+      maxAge: 360000, // one hour in millis
+    },
     saveUninitialized: false,
   })
 );
@@ -47,40 +50,25 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:8080/auth/google/secrets",
+      callbackURL: "http://localhost:8080/api/auth/google/secrets",
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     function (accessToken, refreshToken, profile, cb) {
-      console.log(profile);
-
-      User.findOrCreate({ googleId: profile.id }, function (err, user) {
-        return cb(err, user);
-      });
+      User.findOrCreate(
+        {
+          googleId: profile.id,
+          displayName: profile.displayName,
+          photoUrl: profile.photos[0].value,
+          username: profile.emails[0].value,
+        },
+        function (err, user) {
+          return cb(err, user);
+        }
+      );
     }
   )
 );
 // routes
-
-app.get("/api/secrets", function (req, res) {
-  User.find({ secret: { $ne: null } }, function (err, foundUsers) {
-    if (err) {
-      console.log(err);
-    } else {
-      if (foundUsers) {
-        res.render("secrets", { usersWithSecrets: foundUsers });
-      }
-    }
-  });
-});
-
-app.get("/api/submit", function (req, res) {
-  if (req.isAuthenticated()) {
-    res.render("submit");
-  } else {
-    res.redirect("/login");
-  }
-});
-
 app.post("/api/submit", function (req, res) {
   const submittedSecret = req.body.secret;
 
@@ -100,6 +88,9 @@ app.post("/api/submit", function (req, res) {
     }
   });
 });
+app.get("/", (req, res) => {
+  res.json({ message: "Tutorials API" });
+});
 
 // connect to db
 db.mongoose.set("useCreateIndex", true);
@@ -115,10 +106,6 @@ db.mongoose
     console.log("Cannot connect to the database!", err);
     process.exit();
   });
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Tutorials API" });
-});
 
 // set port, listen for requests
 require("./app/routes/tutorial.routes")(app);
