@@ -1,11 +1,11 @@
 module.exports = (mongoose) => {
   var schema = mongoose.Schema(
     {
-      title: String,
-      description: String,
+      content: String,
       published: Boolean,
       author: String,
       userId: String,
+      rating: Number,
     },
     { timestamps: true }
   );
@@ -16,6 +16,6 @@ module.exports = (mongoose) => {
     return object;
   });
   // define a collection in db
-  const Tutorial = mongoose.model("tutorial", schema);
+  const Tutorial = mongoose.model("joke", schema);
   return Tutorial;
 };

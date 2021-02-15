@@ -5,17 +5,17 @@ const admin = process.env.ADMIN_ID;
 // Create and Save a new Tutorial // passport
 exports.create = (req, res) => {
   // validate request
-  if (!req.body.title) {
+  if (!req.body.content) {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
   }
   // create a Tutorial
   const tutorial = new Tutorial({
-    title: req.body.title,
-    description: req.body.description,
+    content: req.body.content,
     published: req.body.published ? req.body.published : false,
     author: req.body.author ? req.body.author : "Anonymous",
     userId: req.body.userId ? req.body.userId : "0",
+    rating: req.body.rating ? req.body.rating : "0",
   });
   // save Tutorial in the database
   tutorial
@@ -73,28 +73,20 @@ exports.findAll = (req, res) => {
   });
 };
 
-// Find a single Tutorial with an id (not used atm)//
+// Find a single Tutorial with an id //
 exports.findOne = (req, res) => {
-  User.findById(req.user.id, function (err, foundUsers) {
-    if (foundUsers) {
-      const id = req.params.id;
-      Tutorial.findById(id)
-        .then((data) => {
-          if (!data)
-            res
-              .status(404)
-              .send({ message: "Not found Tutorial with id " + id });
-          else res.send(data);
-        })
-        .catch((err) => {
-          res
-            .status(500)
-            .send({ message: "Error retrieving Tutorial with id=" + id });
-        });
-    } else {
-      res.status(403).send("Not authenticated");
-    }
-  });
+  const id = req.params.id;
+  Tutorial.findById(id)
+    .then((data) => {
+      if (!data)
+        res.status(404).send({ message: "Not found Tutorial with id " + id });
+      else res.send(data);
+    })
+    .catch((err) => {
+      res
+        .status(500)
+        .send({ message: "Error retrieving Tutorial with id=" + id });
+    });
 };
 // Find a single Tutorial with an id for update //
 exports.findOneForUpdate = (req, res) => {
@@ -136,7 +128,7 @@ exports.update = (req, res) => {
               res.status(404).send({
                 message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
               });
-            else res.send({ message: "Tutorial was updated successfully." });
+            else res.send(data);
           })
           .catch((err) => {
             res

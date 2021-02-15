@@ -25,7 +25,7 @@ app.use(
     secret: "12345667",
     resave: false,
     cookie: {
-      maxAge: 360000, // one hour in millis
+      maxAge: 3600000, // one hour in millis
     },
     saveUninitialized: false,
   })

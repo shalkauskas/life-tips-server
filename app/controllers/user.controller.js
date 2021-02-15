@@ -57,7 +57,7 @@ exports.dashboard = (req, res) => {
 };
 exports.register = (req, res) => {
   User.register(
-    { username: req.body.username },
+    { username: req.body.username, displayName: req.body.displayName },
     req.body.password,
     function (err, user) {
       if (err) {
@@ -65,7 +65,9 @@ exports.register = (req, res) => {
         res.redirect("/register");
       } else {
         passport.authenticate("local")(req, res, function () {
-          return res.status(200).json({ success: true, data: user });
+          req.session.save(() => {
+            return res.status(200).json({ success: true, data: user });
+          });
         });
       }
     }
