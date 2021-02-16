@@ -1,6 +1,7 @@
 const passport = require("passport");
 const db = require("../models");
 const User = db.users;
+const admin = process.env.ADMIN_ID;
 exports.index = (req, res) => {
   if (req.isAuthenticated()) {
     User.findById(req.user.id, function (err, foundUser) {
@@ -48,6 +49,22 @@ exports.dashboard = (req, res) => {
         if (foundUser) {
           // console.log(foundUser);
           res.json({ isAuthenticated: true, user: foundUser });
+        }
+      }
+    });
+  } else {
+    res.status(403).send("Not authenticated");
+  }
+};
+exports.admin = (req, res) => {
+  if (req.isAuthenticated()) {
+    User.findById(req.user.id, function (err, foundUser) {
+      if (err) {
+        console.log(err);
+      } else {
+        if (req.user.id === admin) {
+          // console.log(foundUser);
+          res.json({ admin: true, user: foundUser });
         }
       }
     });

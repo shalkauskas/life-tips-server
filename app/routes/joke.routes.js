@@ -2,7 +2,7 @@ module.exports = (app) => {
   const jokes = require("../controllers/joke.controller.js");
 
   var router = require("express").Router();
-  // Create a new Tutorial
+  // Create a new Joke
   router.post("/joke", jokes.create);
 
   // Retrieve all published Jokes
@@ -10,16 +10,17 @@ module.exports = (app) => {
   // Retrieve all User published jokes
   router.get("/joke/update", jokes.findAll);
 
-  // Retrieve a single Tutorial with id
+  // Retrieve a single Joke with id
   router.get("/joke/:id", jokes.findOne);
 
-  // Retrieve a single Tutorial with id for update
+  // Retrieve a single Joke with id for update
   router.get("/joke/update/:id", jokes.findOneForUpdate);
 
-  // Update a Tutorial with id
+  // Update a Joke with id
   router.put("/joke/update/:id", jokes.update);
-
-  // Delete a Tutorial with id
+  // Update/Publish all jokes
+  router.put("/joke/update/", jokes.updateMany);
+  // Delete a Joke with id
   router.delete("/joke/update/:id", jokes.delete);
 
   // Delete all Jokes

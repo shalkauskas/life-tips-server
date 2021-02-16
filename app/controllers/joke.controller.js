@@ -62,7 +62,18 @@ exports.findAllPublished = (req, res) => {
 // Retrieve all User published Jokes // passport
 exports.findAll = (req, res) => {
   User.findById(req.user.id, function (err, foundUsers) {
-    if (foundUsers) {
+    if (req.user.id === admin) {
+      Joke.find({})
+        .then((data) => {
+          res.send(data);
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred while retrieving Jokes.",
+          });
+        });
+    } else if (foundUsers) {
       Joke.find({ userId: req.user.id })
         .then((data) => {
           res.send(data);
@@ -136,6 +147,35 @@ exports.update = (req, res) => {
             res
               .status(500)
               .send({ message: "Error updating Joke with id=" + id });
+          });
+      } else {
+        res.status(403).send("Not authenticated");
+      }
+    });
+  }
+};
+exports.updateMany = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  } else {
+    User.findById(req.user.id, function (err, foundUsers) {
+      if (foundUsers) {
+        Joke.updateMany(
+          { published: false },
+          { $set: { published: true } },
+          { useFindAndModify: false }
+        )
+          .then((data) => {
+            if (!data)
+              res.status(404).send({
+                message: `Cannot update Jokes. Maybe Joke was not found! Ha-ha!`,
+              });
+            else res.send(data);
+          })
+          .catch((err) => {
+            res.status(500).send({ message: "Error updating Jokes" });
           });
       } else {
         res.status(403).send("Not authenticated");

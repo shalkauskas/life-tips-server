@@ -9,6 +9,8 @@ module.exports = (app) => {
   router.post("/login", users.login);
   // dashboard
   router.get("/dashboard", users.dashboard);
+  // admin
+  router.get("/admin", users.admin);
   // register
   router.post("/register", users.register);
   // logout
