@@ -6,6 +6,7 @@ module.exports = (mongoose) => {
       author: String,
       userId: String,
       rating: Number,
+      time: String,
     },
     { timestamps: true }
   );
@@ -16,6 +17,6 @@ module.exports = (mongoose) => {
     return object;
   });
   // define a collection in db
-  const Tutorial = mongoose.model("joke", schema);
-  return Tutorial;
+  const Joke = mongoose.model("joke", schema);
+  return Joke;
 };

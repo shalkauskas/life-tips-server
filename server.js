@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
-    secret: "12345667",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     cookie: {
       maxAge: 3600000, // one hour in millis
@@ -69,27 +69,8 @@ passport.use(
   )
 );
 // routes
-app.post("/api/submit", function (req, res) {
-  const submittedSecret = req.body.secret;
-
-  //Once the user is authenticated and their session gets saved, their user details are saved to req.user.
-  // console.log(req.user.id);
-
-  User.findById(req.user.id, function (err, foundUser) {
-    if (err) {
-      console.log(err);
-    } else {
-      if (foundUser) {
-        foundUser.secret = submittedSecret;
-        foundUser.save(function () {
-          res.redirect("/api/secrets");
-        });
-      }
-    }
-  });
-});
 app.get("/", (req, res) => {
-  res.json({ message: "Tutorials API" });
+  res.json({ message: "Dad's jokes API" });
 });
 
 // connect to db
@@ -98,6 +79,7 @@ db.mongoose
   .connect(db.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useFindAndModify: false,
   })
   .then(() => {
     console.log("Connected to the database!");
@@ -108,7 +90,7 @@ db.mongoose
   });
 
 // set port, listen for requests
-require("./app/routes/tutorial.routes")(app);
+require("./app/routes/joke.routes")(app);
 require("./app/routes/auth.routes")(app);
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
