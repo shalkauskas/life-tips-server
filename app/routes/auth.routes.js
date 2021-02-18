@@ -11,6 +11,8 @@ module.exports = (app) => {
   router.get("/dashboard", users.dashboard);
   // admin
   router.get("/admin", users.admin);
+  // update name
+  router.post("/dashboard", users.updateName);
   // register
   router.post("/register", users.register);
   // logout

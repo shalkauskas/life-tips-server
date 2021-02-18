@@ -90,6 +90,31 @@ exports.register = (req, res) => {
     }
   );
 };
+
+exports.updateName = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  } else {
+    User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { displayName: req.body.displayName } },
+      { useFindAndModify: false }
+    )
+      .then((data) => {
+        if (!data)
+          res.status(404).send({
+            message: `Cannot update user`,
+          });
+        else res.send(data);
+      })
+      .catch((err) => {
+        res.status(500).send({ message: "Error updating user" });
+      });
+  }
+};
+
 exports.logout = (req, res) => {
   req.logout();
   res.json({ success: true });
