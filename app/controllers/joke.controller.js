@@ -125,33 +125,34 @@ exports.findOneForUpdate = (req, res) => {
   });
 };
 
-// Update a Joke by the id in the request //
+// Update a Joke by the id in the request // commented out: rating only for authorized users
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
     });
   } else {
-    User.findById(req.user.id, function (err, foundUsers) {
-      if (foundUsers) {
-        const id = req.params.id;
-        Joke.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-          .then((data) => {
-            if (!data)
-              res.status(404).send({
-                message: `Cannot update Joke with id=${id}. Maybe Joke was not found!`,
-              });
-            else res.send(data);
-          })
-          .catch((err) => {
-            res
-              .status(500)
-              .send({ message: "Error updating Joke with id=" + id });
+    // User.findById(req.user.id, function (err, foundUsers) {
+    //   if (foundUsers) {
+    const id = req.params.id;
+    Joke.findByIdAndUpdate(id, req.body, {
+      useFindAndModify: false,
+      new: true,
+    })
+      .then((data) => {
+        if (!data)
+          res.status(404).send({
+            message: `Cannot update Joke with id=${id}. Maybe Joke was not found!`,
           });
-      } else {
-        res.status(403).send("Not authenticated");
-      }
-    });
+        else res.send(data);
+      })
+      .catch((err) => {
+        res.status(500).send({ message: "Error updating Joke with id=" + id });
+      });
+    // } else {
+    //   res.status(403).send("Not authenticated");
+    // }
+    // });
   }
 };
 exports.updateMany = (req, res) => {
