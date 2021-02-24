@@ -75,7 +75,7 @@ exports.register = (req, res) => {
   );
 };
 
-exports.updateName = (req, res) => {
+exports.updateUser = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
@@ -83,31 +83,12 @@ exports.updateName = (req, res) => {
   } else {
     User.findByIdAndUpdate(
       req.user.id,
-      { $set: { displayName: req.body.displayName } },
-      { useFindAndModify: false }
-    )
-      .then((data) => {
-        if (!data)
-          res.status(404).send({
-            message: `Cannot update user`,
-          });
-        else res.send(data);
-      })
-      .catch((err) => {
-        res.status(500).send({ message: "Error updating user" });
-      });
-  }
-};
-
-exports.updatePhoto = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!",
-    });
-  } else {
-    User.findByIdAndUpdate(
-      req.user.id,
-      { $set: { photoUrl: req.body.photoUrl } },
+      {
+        $set: {
+          photoUrl: req.body.photoUrl,
+          displayName: req.body.displayName,
+        },
+      },
       { useFindAndModify: false }
     )
       .then((data) => {
