@@ -1,4 +1,4 @@
-module.exports = (mongoose) => {
+module.exports = (mongoose, mongoosePaginate) => {
   var schema = mongoose.Schema(
     {
       content: String,
@@ -16,6 +16,7 @@ module.exports = (mongoose) => {
     object.id = _id;
     return object;
   });
+  schema.plugin(mongoosePaginate);
   // define a collection in db
   const Joke = mongoose.model("joke", schema);
   return Joke;

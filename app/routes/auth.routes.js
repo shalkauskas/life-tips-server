@@ -7,12 +7,12 @@ module.exports = (app) => {
   router.get("/", users.index);
   // login
   router.post("/login", users.login);
-  // dashboard
-  router.get("/dashboard", users.dashboard);
   // admin
   router.get("/admin", users.admin);
   // update name
   router.post("/dashboard", users.updateName);
+  // update photo
+  router.post("/dashboard/profile", users.updatePhoto);
   // register
   router.post("/register", users.register);
   // logout
@@ -28,13 +28,6 @@ module.exports = (app) => {
       failureRedirect: "/login",
     }),
     function (req, res) {
-      // req.session.save(() => {
-      //   if (req.isAuthenticated()) {
-      //     res.status(200).json({ isAuthenticated: true });
-      //   } else {
-      //     res.status(500).json({ isAuthenticated: false });
-      //   }
-      // });
       res.redirect(process.env.CORS_ORIGIN);
     }
   );

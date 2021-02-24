@@ -2,6 +2,13 @@ const db = require("../models");
 const Joke = db.jokes;
 const User = db.users;
 const admin = process.env.ADMIN_ID;
+// Pagintaion
+const getPagination = (page, size) => {
+  const limit = size ? +size : 10;
+  const offset = page ? page * limit : 0;
+
+  return { limit, offset };
+};
 // Create and Save a new Joke // passport
 exports.create = (req, res) => {
   // validate request
@@ -40,17 +47,23 @@ exports.create = (req, res) => {
 
 // Retrieve all published Jokes //
 exports.findAllPublished = (req, res) => {
-  const query = req.query.title;
-  var condition = query
+  // const query = req.query.title;
+  const { title, page, size } = req.query;
+  var condition = title
     ? {
         published: true,
-        $text: { $search: query },
+        $text: { $search: title },
       }
     : { published: true };
-
-  Joke.find(condition)
+  const { limit, offset } = getPagination(page, size);
+  Joke.paginate(condition, { offset, limit })
     .then((data) => {
-      res.send(data);
+      res.send({
+        totalItems: data.totalDocs,
+        jokes: data.docs,
+        totalPages: data.totalPages,
+        currentPage: data.page - 1,
+      });
     })
     .catch((err) => {
       res.status(500).send({
