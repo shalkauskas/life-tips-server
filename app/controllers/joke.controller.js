@@ -47,8 +47,13 @@ exports.create = (req, res) => {
 
 // Retrieve all published Jokes //
 exports.findAllPublished = (req, res) => {
-  // const query = req.query.title;
-  const { title, page, size } = req.query;
+  const { title, page, size, order } = req.query;
+  var sortOrder =
+    order === "new"
+      ? { time: -1 }
+      : order === "best"
+      ? { rating: -1 }
+      : { id: 1 };
   var condition = title
     ? {
         published: true,
@@ -56,13 +61,16 @@ exports.findAllPublished = (req, res) => {
       }
     : { published: true };
   const { limit, offset } = getPagination(page, size);
-  Joke.paginate(condition, { offset, limit })
+  Joke.paginate(condition, { offset, limit, sort: sortOrder })
     .then((data) => {
       res.send({
         totalItems: data.totalDocs,
         jokes: data.docs,
         totalPages: data.totalPages,
         currentPage: data.page - 1,
+        hasPrevPage: data.hasPrevPage,
+        hasNextPage: data.hasNextPage,
+        order: order,
       });
     })
     .catch((err) => {
