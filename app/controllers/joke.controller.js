@@ -82,11 +82,27 @@ exports.findAllPublished = (req, res) => {
 
 // Retrieve all User published Jokes // passport
 exports.findAll = (req, res) => {
+  const { title, page, size, order } = req.query;
+  var sortOrder =
+    order === "new"
+      ? { time: -1 }
+      : order === "best"
+      ? { rating: -1 }
+      : { id: 1 };
+  const { limit, offset } = getPagination(page, size);
   User.findById(req.user.id, function (err, foundUsers) {
     if (req.user.id === admin) {
-      Joke.find({})
+      Joke.paginate({}, { offset, limit, sort: sortOrder })
         .then((data) => {
-          res.send(data);
+          res.send({
+            totalItems: data.totalDocs,
+            jokes: data.docs,
+            totalPages: data.totalPages,
+            currentPage: data.page - 1,
+            hasPrevPage: data.hasPrevPage,
+            hasNextPage: data.hasNextPage,
+            order: order,
+          });
         })
         .catch((err) => {
           res.status(500).send({
@@ -95,9 +111,17 @@ exports.findAll = (req, res) => {
           });
         });
     } else if (foundUsers) {
-      Joke.find({ userId: req.user.id })
+      Joke.paginate({ userId: req.user.id }, { offset, limit, sort: sortOrder })
         .then((data) => {
-          res.send(data);
+          res.send({
+            totalItems: data.totalDocs,
+            jokes: data.docs,
+            totalPages: data.totalPages,
+            currentPage: data.page - 1,
+            hasPrevPage: data.hasPrevPage,
+            hasNextPage: data.hasNextPage,
+            order: order,
+          });
         })
         .catch((err) => {
           res.status(500).send({
