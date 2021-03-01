@@ -15,6 +15,7 @@ var corsOptions = {
   origin: process.env.CORS_ORIGIN,
   credentials: true,
 };
+app.set(`trust proxy`, 1);
 app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
@@ -23,11 +24,13 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.set(`trust proxy`, 1);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
+    key: "sid",
+    proxy: true,
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis

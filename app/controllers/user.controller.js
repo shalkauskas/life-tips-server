@@ -3,7 +3,6 @@ const db = require("../models");
 const User = db.users;
 const admin = process.env.ADMIN_ID;
 exports.index = (req, res) => {
-  res.cookie(`userid`, req.user.id, { maxAge: 2592000000 });
   if (req.isAuthenticated()) {
     User.findById(req.user.id, function (err, foundUser) {
       if (err) {
