@@ -1,5 +1,4 @@
 const express = require("express");
-const forceSsl = require("force-ssl-heroku");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
@@ -11,7 +10,6 @@ require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // const findOrCreate = require("mongoose-findorcreate");
 const db = require("./app/models");
-app.use(forceSsl);
 const User = db.users;
 var corsOptions = {
   origin: process.env.CORS_ORIGIN,
@@ -36,7 +34,7 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
-      secure: false,
+      secure: true,
     },
     saveUninitialized: true,
   })
