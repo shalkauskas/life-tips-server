@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-app.enable(`trust proxy`);
+app.set(`trust proxy`);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
