@@ -21,15 +21,17 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-app.set(`trust proxy`);
+app.set(`trust proxy`, 1);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    proxy: true,
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
+      secure: true,
+      sameSite: true,
+      httpOnly: true,
     },
     saveUninitialized: false,
   })
