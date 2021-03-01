@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
 const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
 const passport = require("passport");
 require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -20,10 +21,13 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
+app.enable(`trust proxy`);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
+    proxy: true,
+    store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
     },
