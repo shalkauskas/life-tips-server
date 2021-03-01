@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MongoStore = require("connect-mongo").default;
 const passport = require("passport");
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.set(`trust proxy`, 1);
 app.use(
   session({
@@ -29,11 +31,9 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
-      secure: true,
-      sameSite: true,
-      httpOnly: true,
+      secure: false,
     },
-    saveUninitialized: false,
+    saveUninitialized: true,
   })
 );
 app.use(passport.initialize());

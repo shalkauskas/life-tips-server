@@ -3,6 +3,7 @@ const db = require("../models");
 const User = db.users;
 const admin = process.env.ADMIN_ID;
 exports.index = (req, res) => {
+  res.cookie(`userid`, req.user.id, { maxAge: 2592000000 });
   if (req.isAuthenticated()) {
     User.findById(req.user.id, function (err, foundUser) {
       if (err) {
@@ -29,6 +30,7 @@ exports.login = (req, res) => {
       console.log(err);
     } else {
       passport.authenticate("local")(req, res, function () {
+        res.cookie(`userid`, user.id, { maxAge: 2592000000 });
         req.session.save(() => {
           if (req.isAuthenticated()) {
             res.status(200).json({ isAuthenticated: true });
