@@ -12,7 +12,7 @@ const getPagination = (page, size) => {
 // Create and Save a new Joke // passport
 exports.create = (req, res) => {
   // validate request
-  if (!req.body.content) {
+  if (!req.body.title) {
     res.status(400).send({ message: "Content can not be empty!" });
     return;
   }
@@ -26,6 +26,7 @@ exports.create = (req, res) => {
   });
   const joke = new Joke({
     content: req.body.content,
+    title: req.body.title,
     published: req.body.published ? req.body.published : false,
     author: req.body.author ? req.body.author : "Anonymous",
     userId: req.body.userId ? req.body.userId : "0",
