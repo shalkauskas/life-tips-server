@@ -19,6 +19,6 @@ module.exports = (mongoose, mongoosePaginate) => {
   });
   schema.plugin(mongoosePaginate);
   // define a collection in db
-  const Joke = mongoose.model("joke", schema);
-  return Joke;
+  const Post = mongoose.model("post", schema);
+  return Post;
 };

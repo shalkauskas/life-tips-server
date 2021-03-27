@@ -34,7 +34,7 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
-      secure: true,
+      secure: false,
     },
     saveUninitialized: true,
   })
@@ -79,7 +79,7 @@ passport.use(
 );
 // routes
 app.get("/", (req, res) => {
-  res.json({ message: "Dad's jokes API" });
+  res.json({ message: "Dad's posts API" });
 });
 
 // connect to db
@@ -99,7 +99,7 @@ db.mongoose
   });
 
 // set port, listen for requests
-require("./app/routes/joke.routes")(app);
+require("./app/routes/post.routes")(app);
 require("./app/routes/auth.routes")(app);
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

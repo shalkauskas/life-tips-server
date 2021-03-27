@@ -1,5 +1,5 @@
 const db = require("../models");
-const Joke = db.jokes;
+const Post = db.posts;
 const User = db.users;
 const admin = process.env.ADMIN_ID;
 // Pagintaion
@@ -9,14 +9,14 @@ const getPagination = (page, size) => {
 
   return { limit, offset };
 };
-// Create and Save a new Joke // passport
+// Create and Save a new Post // passport
 exports.create = (req, res) => {
   // validate request
   if (!req.body.title) {
-    res.status(400).send({ message: "Content can not be empty!" });
+    res.status(400).send({ message: "Title can not be empty!" });
     return;
   }
-  // create a Joke
+  // create a Post
   const currentTime = new Date().toLocaleString([], {
     year: "numeric",
     month: "numeric",
@@ -24,7 +24,7 @@ exports.create = (req, res) => {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const joke = new Joke({
+  const post = new Post({
     content: req.body.content,
     title: req.body.title,
     published: req.body.published ? req.body.published : false,
@@ -33,20 +33,20 @@ exports.create = (req, res) => {
     rating: req.body.rating ? req.body.rating : "0",
     time: req.body.time ? req.body.time : currentTime,
   });
-  // save Joke in the database
-  joke
-    .save(joke)
+  // save Post in the database
+  post
+    .save(post)
     .then((data) => {
       res.send(data);
     })
     .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while creating the Joke.",
+        message: err.message || "Some error occurred while creating the Post.",
       });
     });
 };
 
-// Retrieve all published Jokes //
+// Retrieve all published Posts //
 exports.findAllPublished = (req, res) => {
   const { title, page, size, order } = req.query;
   var sortOrder =
@@ -62,11 +62,11 @@ exports.findAllPublished = (req, res) => {
       }
     : { published: true };
   const { limit, offset } = getPagination(page, size);
-  Joke.paginate(condition, { offset, limit, sort: sortOrder })
+  Post.paginate(condition, { offset, limit, sort: sortOrder })
     .then((data) => {
       res.send({
         totalItems: data.totalDocs,
-        jokes: data.docs,
+        posts: data.docs,
         totalPages: data.totalPages,
         currentPage: data.page - 1,
         hasPrevPage: data.hasPrevPage,
@@ -76,12 +76,12 @@ exports.findAllPublished = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving jokes.",
+        message: err.message || "Some error occurred while retrieving posts.",
       });
     });
 };
 
-// Retrieve all User published Jokes // passport
+// Retrieve all User published Posts // passport
 exports.findAll = (req, res) => {
   const { title, page, size, order } = req.query;
   var sortOrder =
@@ -93,11 +93,11 @@ exports.findAll = (req, res) => {
   const { limit, offset } = getPagination(page, size);
   User.findById(req.user.id, function (err, foundUsers) {
     if (req.user.id === admin) {
-      Joke.paginate({}, { offset, limit, sort: sortOrder })
+      Post.paginate({}, { offset, limit, sort: sortOrder })
         .then((data) => {
           res.send({
             totalItems: data.totalDocs,
-            jokes: data.docs,
+            posts: data.docs,
             totalPages: data.totalPages,
             currentPage: data.page - 1,
             hasPrevPage: data.hasPrevPage,
@@ -108,15 +108,15 @@ exports.findAll = (req, res) => {
         .catch((err) => {
           res.status(500).send({
             message:
-              err.message || "Some error occurred while retrieving Jokes.",
+              err.message || "Some error occurred while retrieving Posts.",
           });
         });
     } else if (foundUsers) {
-      Joke.paginate({ userId: req.user.id }, { offset, limit, sort: sortOrder })
+      Post.paginate({ userId: req.user.id }, { offset, limit, sort: sortOrder })
         .then((data) => {
           res.send({
             totalItems: data.totalDocs,
-            jokes: data.docs,
+            posts: data.docs,
             totalPages: data.totalPages,
             currentPage: data.page - 1,
             hasPrevPage: data.hasPrevPage,
@@ -127,7 +127,7 @@ exports.findAll = (req, res) => {
         .catch((err) => {
           res.status(500).send({
             message:
-              err.message || "Some error occurred while retrieving Jokes.",
+              err.message || "Some error occurred while retrieving Posts.",
           });
         });
     } else {
@@ -136,34 +136,34 @@ exports.findAll = (req, res) => {
   });
 };
 
-// Find a single Joke with an id //
+// Find a single Post with an id //
 exports.findOne = (req, res) => {
   const id = req.params.id;
-  Joke.findById(id)
+  Post.findById(id)
     .then((data) => {
       if (!data)
-        res.status(404).send({ message: "Not found Joke with id " + id });
+        res.status(404).send({ message: "Not found Post with id " + id });
       else res.send(data);
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error retrieving Joke with id=" + id });
+      res.status(500).send({ message: "Error retrieving Post with id=" + id });
     });
 };
-// Find a single Joke with an id for update //
+// Find a single Post with an id for update //
 exports.findOneForUpdate = (req, res) => {
   User.findById(req.user.id, function (err, foundUsers) {
     if (foundUsers) {
       const id = req.params.id;
-      Joke.findById(id)
+      Post.findById(id)
         .then((data) => {
           if (!data)
-            res.status(404).send({ message: "Not found Joke with id " + id });
+            res.status(404).send({ message: "Not found Post with id " + id });
           else res.send(data);
         })
         .catch((err) => {
           res
             .status(500)
-            .send({ message: "Error retrieving Joke with id=" + id });
+            .send({ message: "Error retrieving Post with id=" + id });
         });
     } else {
       res.status(403).send("Not authenticated");
@@ -171,29 +171,28 @@ exports.findOneForUpdate = (req, res) => {
   });
 };
 
-// Update a Joke by the id in the request // commented out: rating only for authorized users
+// Update a Post by the id in the request // commented out: rating only for authorized users
 exports.update = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!",
-    });
+  // validate request
+  if (!req.body.title) {
+    res.status(400).send({ message: "Title can not be empty!" });
   } else {
     // User.findById(req.user.id, function (err, foundUsers) {
     //   if (foundUsers) {
     const id = req.params.id;
-    Joke.findByIdAndUpdate(id, req.body, {
+    Post.findByIdAndUpdate(id, req.body, {
       useFindAndModify: false,
       new: true,
     })
       .then((data) => {
         if (!data)
           res.status(404).send({
-            message: `Cannot update Joke with id=${id}. Maybe Joke was not found!`,
+            message: `Cannot update Post with id=${id}. Maybe Post was not found!`,
           });
         else res.send(data);
       })
       .catch((err) => {
-        res.status(500).send({ message: "Error updating Joke with id=" + id });
+        res.status(500).send({ message: "Error updating Post with id=" + id });
       });
     // } else {
     //   res.status(403).send("Not authenticated");
@@ -209,7 +208,7 @@ exports.updateMany = (req, res) => {
   } else {
     User.findById(req.user.id, function (err, foundUsers) {
       if (foundUsers) {
-        Joke.updateMany(
+        Post.updateMany(
           { published: false },
           { $set: { published: true } },
           { useFindAndModify: false }
@@ -217,12 +216,12 @@ exports.updateMany = (req, res) => {
           .then((data) => {
             if (!data)
               res.status(404).send({
-                message: `Cannot update Jokes. Maybe Joke was not found! Ha-ha!`,
+                message: `Cannot update Posts. Maybe Post was not found! Ha-ha!`,
               });
             else res.send(data);
           })
           .catch((err) => {
-            res.status(500).send({ message: "Error updating Jokes" });
+            res.status(500).send({ message: "Error updating Posts" });
           });
       } else {
         res.status(403).send("Not authenticated");
@@ -231,26 +230,26 @@ exports.updateMany = (req, res) => {
   }
 };
 
-// Delete a Joke with the specified id in the request //
+// Delete a Post with the specified id in the request //
 exports.delete = (req, res) => {
   User.findById(req.user.id, function (err, foundUsers) {
     if (foundUsers) {
       const id = req.params.id;
-      Joke.findByIdAndRemove(id)
+      Post.findByIdAndRemove(id)
         .then((data) => {
           if (!data)
             res.status(404).send({
-              message: `Cannot delete Joke with id=${id}. Maybe Joke was not found!`,
+              message: `Cannot delete Post with id=${id}. Maybe Post was not found!`,
             });
           else
             res.send({
-              message: "Joke was deleted successfully!",
+              message: "Post was deleted successfully!",
             });
         })
         .catch((err) => {
           res
             .status(500)
-            .send({ message: "Could not delete Joke with id=" + id });
+            .send({ message: "Could not delete Post with id=" + id });
         });
     } else {
       res.status(403).send("Not authenticated");
@@ -258,20 +257,20 @@ exports.delete = (req, res) => {
   });
 };
 
-// Delete all Jokes added by user //
+// Delete all Posts added by user //
 exports.deleteAll = (req, res) => {
   User.findById(req.user.id, function (err, foundUsers) {
     if (foundUsers) {
-      Joke.deleteMany({ userId: req.user.id })
+      Post.deleteMany({ userId: req.user.id })
         .then((data) => {
           res.send({
-            message: `${data.deletedCount} Jokes were deleted successfully!`,
+            message: `${data.deletedCount} Posts were deleted successfully!`,
           });
         })
         .catch((err) => {
           res.status(500).send({
             message:
-              err.message || "Some error occurred while removing all Jokes.",
+              err.message || "Some error occurred while removing all Posts.",
           });
         });
     } else {
