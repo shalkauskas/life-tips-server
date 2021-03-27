@@ -174,8 +174,8 @@ exports.findOneForUpdate = (req, res) => {
 // Update a Post by the id in the request // commented out: rating only for authorized users
 exports.update = (req, res) => {
   // validate request
-  if (!req.body.title) {
-    res.status(400).send({ message: "Title can not be empty!" });
+  if (!req.body) {
+    res.status(400).json({ message: "Title can not be empty!" });
   } else {
     // User.findById(req.user.id, function (err, foundUsers) {
     //   if (foundUsers) {
