@@ -50,11 +50,11 @@ exports.create = (req, res) => {
 exports.findAllPublished = (req, res) => {
   const { title, page, size, order } = req.query;
   var sortOrder =
-    order === "new"
-      ? { time: -1 }
+    order === "random"
+      ? { id: 1 }
       : order === "best"
       ? { rating: -1 }
-      : { id: 1 };
+      : { time: -1 };
   var condition = title
     ? {
         published: true,

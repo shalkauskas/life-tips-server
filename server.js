@@ -34,7 +34,7 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
     cookie: {
       maxAge: 3600000, // one hour in millis
-      secure: process.env.PRODUCTION ? true : false,
+      secure: true,
     },
     saveUninitialized: true,
   })
@@ -79,7 +79,7 @@ passport.use(
 );
 // routes
 app.get("/", (req, res) => {
-  res.json({ message: "Dad's posts API" });
+  res.json({ message: "Life Pro Tips API" });
 });
 
 // connect to db
