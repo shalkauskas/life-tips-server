@@ -2,6 +2,13 @@ const db = require("../models");
 const Post = db.posts;
 const User = db.users;
 const admin = process.env.ADMIN_ID;
+const currentTime = new Date().toLocaleString([], {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 // Pagintaion
 const getPagination = (page, size) => {
   const limit = size ? +size : 10;
@@ -9,6 +16,7 @@ const getPagination = (page, size) => {
 
   return { limit, offset };
 };
+
 // Create and Save a new Post // passport
 exports.create = (req, res) => {
   // validate request
@@ -17,13 +25,7 @@ exports.create = (req, res) => {
     return;
   }
   // create a Post
-  const currentTime = new Date().toLocaleString([], {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+
   const post = new Post({
     content: req.body.content,
     title: req.body.title,
@@ -48,7 +50,7 @@ exports.create = (req, res) => {
 
 // Retrieve all published Posts //
 exports.findAllPublished = (req, res) => {
-  const { title, page, size, order } = req.query;
+  const { title, page, size, order, user } = req.query;
   var sortOrder =
     order === "random"
       ? { id: 1 }
@@ -59,6 +61,10 @@ exports.findAllPublished = (req, res) => {
     ? {
         published: true,
         $text: { $search: title },
+      }
+    : user
+    ? {
+        likes: { $all: [user] },
       }
     : { published: true };
   const { limit, offset } = getPagination(page, size);
@@ -92,6 +98,7 @@ exports.findAll = (req, res) => {
       : { id: 1 };
   const { limit, offset } = getPagination(page, size);
   User.findById(req.user.id, function (err, foundUsers) {
+    // admin see all users posts on his dashboard
     if (req.user.id === admin) {
       Post.paginate({}, { offset, limit, sort: sortOrder })
         .then((data) => {
@@ -173,6 +180,7 @@ exports.findOneForUpdate = (req, res) => {
 
 // Update a Post by the id in the request // commented out: rating only for authorized users
 exports.update = (req, res) => {
+  console.log(req.body);
   // validate request
   if (!req.body) {
     res.status(400).json({ message: "Title can not be empty!" });
@@ -180,20 +188,49 @@ exports.update = (req, res) => {
     // User.findById(req.user.id, function (err, foundUsers) {
     //   if (foundUsers) {
     const id = req.params.id;
-    Post.findByIdAndUpdate(id, req.body, {
-      useFindAndModify: false,
-      new: true,
-    })
-      .then((data) => {
-        if (!data)
-          res.status(404).send({
-            message: `Cannot update Post with id=${id}. Maybe Post was not found!`,
-          });
-        else res.send(data);
+
+    if (req.body.likes) {
+      const updateQuery =
+        req.body.switch === "add"
+          ? { $push: { likes: req.body.likes } }
+          : req.body.switch === "remove"
+          ? { $pull: { likes: req.body.likes } }
+          : null;
+      Post.findByIdAndUpdate(id, updateQuery, {
+        useFindAndModify: false,
+        new: true,
       })
-      .catch((err) => {
-        res.status(500).send({ message: "Error updating Post with id=" + id });
-      });
+        .then((data) => {
+          if (!data)
+            res.status(404).send({
+              message: `Cannot update Post with id=${id}. Maybe Post was not found!`,
+            });
+          else res.send(data);
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .send({ message: "Error updating Post with id=" + id });
+        });
+    } else {
+      Post.findByIdAndUpdate(id, req.body, {
+        useFindAndModify: false,
+        new: true,
+      })
+        .then((data) => {
+          if (!data)
+            res.status(404).send({
+              message: `Cannot update Post with id=${id}. Maybe Post was not found!`,
+            });
+          else res.send(data);
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .send({ message: "Error updating Post with id=" + id });
+        });
+    }
+
     // } else {
     //   res.status(403).send("Not authenticated");
     // }
@@ -277,4 +314,45 @@ exports.deleteAll = (req, res) => {
       res.status(403).send("Not authenticated");
     }
   });
+};
+// Create and Save a new Post // passport
+exports.addComment = (req, res) => {
+  const id = req.params.id;
+  if (!req.body.content) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  } else {
+    User.findById(req.user.id, function (err, foundUsers) {
+      if (foundUsers) {
+        const updateQuery = {
+          $push: {
+            comments: {
+              userId: req.user.id,
+              content: req.body.content,
+              time: req.body.time || currentTime,
+            },
+          },
+        };
+        Post.findByIdAndUpdate(id, updateQuery, {
+          useFindAndModify: false,
+          new: true,
+        })
+          .then((data) => {
+            if (!data)
+              res.status(404).send({
+                message: `Cannot update Post with id=${id}. Maybe Post was not found!`,
+              });
+            else res.send(data);
+          })
+          .catch((err) => {
+            res
+              .status(500)
+              .send({ message: "Error updating Post with id=" + id });
+          });
+      } else {
+        res.status(403).send("Not authenticated");
+      }
+    });
+  }
 };

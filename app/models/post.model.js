@@ -8,6 +8,15 @@ module.exports = (mongoose, mongoosePaginate) => {
       userId: String,
       rating: Number,
       time: String,
+      likes: [String],
+      comments: [
+        {
+          userId: String,
+          content: String,
+          time: String,
+          likes: [String],
+        },
+      ],
     },
     { timestamps: true }
   );
