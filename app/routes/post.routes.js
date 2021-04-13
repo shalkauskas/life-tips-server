@@ -13,7 +13,8 @@ module.exports = (app) => {
 
   // Retrieve a single Post with id
   router.get("/post/:id", posts.findOne);
-
+  // Get comments
+  router.get("post/:id/comments", posts.getComments);
   // Retrieve a single Post with id for update
   router.get("/post/update/:id", posts.findOneForUpdate);
 

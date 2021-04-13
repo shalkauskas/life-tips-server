@@ -315,7 +315,7 @@ exports.deleteAll = (req, res) => {
     }
   });
 };
-// Create and Save a new Post // passport
+// Add comment
 exports.addComment = (req, res) => {
   const id = req.params.id;
   if (!req.body.content) {
@@ -328,6 +328,7 @@ exports.addComment = (req, res) => {
         const updateQuery = {
           $push: {
             comments: {
+              id: req.body.id,
               userId: req.user.id,
               content: req.body.content,
               time: req.body.time || currentTime,
@@ -356,3 +357,5 @@ exports.addComment = (req, res) => {
     });
   }
 };
+// Get comments
+exports.getComments = (req, res) => {};

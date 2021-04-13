@@ -32,7 +32,16 @@ exports.login = (req, res) => {
         res.cookie(`userid`, user.id, { maxAge: 2592000000 });
         req.session.save(() => {
           if (req.isAuthenticated()) {
-            res.status(200).json({ isAuthenticated: true });
+            User.findById(req.user.id, function (err, foundUser) {
+              if (err) {
+                console.log(err);
+              } else {
+                if (foundUser) {
+                  // console.log(foundUser);
+                  res.json({ isAuthenticated: true, user: foundUser });
+                }
+              }
+            });
           } else {
             res.status(500).json({ isAuthenticated: false });
           }
