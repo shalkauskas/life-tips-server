@@ -11,7 +11,6 @@ module.exports = (mongoose, mongoosePaginate) => {
       likes: [String],
       comments: [
         {
-          id: String,
           userId: String,
           content: String,
           time: String,

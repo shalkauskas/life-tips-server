@@ -5,6 +5,8 @@ module.exports = (app) => {
 
   // index
   router.get("/", users.index);
+  // findUser by id
+  router.get("/user/:id", users.findUser);
   // login
   router.post("/login", users.login);
   // admin

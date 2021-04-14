@@ -180,7 +180,7 @@ exports.findOneForUpdate = (req, res) => {
 
 // Update a Post by the id in the request // commented out: rating only for authorized users
 exports.update = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   // validate request
   if (!req.body) {
     res.status(400).json({ message: "Title can not be empty!" });
@@ -358,4 +358,19 @@ exports.addComment = (req, res) => {
   }
 };
 // Get comments
-exports.getComments = (req, res) => {};
+exports.getComments = (req, res) => {
+  const id = req.params.id;
+  Post.findById(id)
+    .then((data) => {
+      if (!data)
+        res
+          .status(404)
+          .send({ message: "Not found comments for Post with id " + id });
+      else {
+        res.send({ comments: data.comments });
+      }
+    })
+    .catch((err) => {
+      res.send({ error: err });
+    });
+};

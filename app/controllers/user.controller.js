@@ -118,3 +118,16 @@ exports.logout = (req, res) => {
   req.logout();
   res.json({ success: true });
 };
+exports.findUser = (req, res) => {
+  const id = req.params.id;
+  User.findById(id, function (err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUser) {
+        // console.log(foundUser);
+        res.json({ user: foundUser });
+      }
+    }
+  });
+};
